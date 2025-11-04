@@ -1,6 +1,6 @@
 # CodeHeaven
 
-> A calm space to understand and improve your code — with or without AI.
+> A calm space to understand and improve your code | with or without AI.
 
 ---
 
