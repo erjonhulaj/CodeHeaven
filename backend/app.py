@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from backend.engine import explain
 
 app = FastAPI()
 
@@ -15,19 +16,11 @@ def home():
 @app.post("/api/explain")
 def explain_code(request: ExplainRequest):
     """
-    Simple stub endpoint that returns a fake explanation.
-    Later this will use local rules or AI, based on 'mode'
+    Endpoint that dispatches between local or AI explanations
     """
-    preview = "\n".join(request.code.strip().splitlines()[:3]) or "(empty)"
-
-    explanation = (
-        f"Mode: {request.mode} | Language: {request.language}\n"
-        f"This is a placeholder explanation for your code.\n"
-        f"Preview:\n{preview}"
-    )
-
+    result = explain(request.code, request.language, request.mode)
     return {
         "mode": request.mode,
         "language": request.language,
-        "explanation": explanation
+        "explanation": result
     }
