@@ -15,9 +15,8 @@ def home():
 
 @app.post("/api/explain")
 def explain_code(request: ExplainRequest):
-    """
-    Endpoint that dispatches between local or AI explanations
-    """
+    #Endpoint that dispatches between local or AI explanations
+    
     result = explain(request.code, request.language, request.mode)
     return {
         "mode": request.mode,
