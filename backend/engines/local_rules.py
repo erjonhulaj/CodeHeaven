@@ -64,4 +64,17 @@ def analyze_python_code(code: str) -> list[str]:
                     f"Consider splitting it into smaller functions."
                 )
 
+    #check for missing docstrings in functions
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef):
+            #a function had a docstring if the first statement is a string literal
+            if (
+                len(node.body) == 0
+                or not isinstance(node.body[0], ast.Expr)
+                or not isinstance(getattr(node.body[0], "value", None), ast.Constant)
+                or not isinstance(getattr(node.body[0].value, "value", None), str)
+            ):
+                smells.append(f"Function '{node.name}' has no docstring."
+                              "Consider adding a short description of its purpose."
+                              )
     return smells
