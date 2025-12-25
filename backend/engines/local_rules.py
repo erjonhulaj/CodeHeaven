@@ -32,7 +32,7 @@ def analyze_python_code(code: str) -> list[str]:
         tree = ast.parse(code)
     except SyntaxError as e:
         # if the code is invalid Python, report the syntax error
-        smells.append(f"Syntax error in line {e.lineno}: {e.msg}")
+        return [f"Syntax Error in line: {e.lineno}: {e.msg}"]
 
     # TODO:
     #walk through all nodes in the AST tree
@@ -64,7 +64,7 @@ def analyze_python_code(code: str) -> list[str]:
                     f"Consider splitting it into smaller functions."
                 )
 
-    #check for missing docstrings in functions
+    #check for missing docstring in functions
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
             #a function had a docstring if the first statement is a string literal
@@ -77,4 +77,21 @@ def analyze_python_code(code: str) -> list[str]:
                 smells.append(f"Function '{node.name}' has no docstring."
                               "Consider adding a short description of its purpose."
                               )
+                
+    #check for unused variables
+    assigned_vars = set()
+    used_vars = set()
+
+    for node in ast.walk(tree):
+        #variable assignments: x ...
+        if isinstance(node, ast.Name):
+            if isinstance(node.ctx, ast.Store):
+                assigned_vars.add(node.id)
+            elif isinstance(node.ctx, ast.Load): 
+                used_vars.add(node.id)
+
+    unused_vars = assigned_vars - used_vars
+    for var in unused_vars:
+        smells.append(f"Variable '{var}' is assigned but never used.")
+    
     return smells
