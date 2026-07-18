@@ -1,3 +1,5 @@
+# ai_provider.py
+
 def explain_ai(code: str, language: str) -> str:
     """
     AI explanation (placeholder)

@@ -1,3 +1,5 @@
+# engine.py
+
 from backend.engines.local_rules import explain_local
 from backend.engines.ai_provider import explain_ai
 

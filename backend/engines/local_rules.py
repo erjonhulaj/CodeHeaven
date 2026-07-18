@@ -1,97 +1,103 @@
+# local_rules.py
+
 import ast
+from backend.models import Finding
 
-MAX_FUNCTION_LENGTH = 25 # lines
+MAX_FUNCTION_LENGTH = 25  # lines
 
-def explain_local(code: str, language: str) -> str:
 
-    # Local rule-based explanation with simple analysis
+def explain_local(code: str, language: str) -> dict:
     if language.lower() == "python":
         issues = analyze_python_code(code)
     else:
-        issues = ["(Only Python analysis supported for now)"]
+        issues = [Finding(
+            rule="unsupported",
+            message=f"Language '{language}' is not yet supported in local mode. Only Python is supported.",
+            severity="info"
+        )]
 
-    preview ="\n".join(code.strip().splitlines()[:3]) or "(empty)"
+    return {"issues": [issue.model_dump() for issue in issues]}
 
-    result = (
-        "[LOCAL MODE]\n"
-        f"Language: {language}\n"
-        "Detected Issues:\n"
-        + ("\n".join(f"- {item}" for item in issues) or "None")
-        + "\n\nPreview:\n"
-        + preview
-        )
-    
-    return result
 
-def analyze_python_code(code: str) -> list[str]:
-    # Analyze Python code and return a list of detected issues ("smells").
-    smells: list[str] = []
+def analyze_python_code(code: str) -> list[Finding]:
+    findings: list[Finding] = []
 
     try:
-        # turn the source code string into an AST tree
         tree = ast.parse(code)
     except SyntaxError as e:
-        # if the code is invalid Python, report the syntax error
-        return [f"Syntax Error in line: {e.lineno}: {e.msg}"]
+        return [Finding(
+            rule="syntax_error",
+            message=f"Syntax error on line {e.lineno}: {e.msg}",
+            severity="high",
+            line=e.lineno
+        )]
 
-    # TODO:
-    #walk through all nodes in the AST tree
+    # Bare except
     for node in ast.walk(tree):
-        # is this node an 'except' block without a specified exception type?
         if isinstance(node, ast.ExceptHandler) and node.type is None:
-            smells.append("Bare 'except:' without specifying an exception type.")
-    #check for long functions
+            findings.append(Finding(
+                rule="bare_except",
+                message="Bare 'except:' catches all exceptions including KeyboardInterrupt. Specify the exception type (e.g. 'except ValueError:').",
+                severity="high",
+                line=getattr(node, "lineno", None)
+            ))
+
+    # Long functions
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
-            #starting line number of the function
             start = getattr(node, "lineno", None)
-            #ending line number of the function
             end = start
             for inner in ast.walk(node):
                 line = getattr(inner, "lineno", None)
                 if line is not None and (end is None or line > end):
                     end = line
 
-            if start is None or end is None:
-                #if we cannot determine the length, skip this function
-                continue
+            if start is not None and end is not None:
+                length = end - start + 1
+                if length > MAX_FUNCTION_LENGTH:
+                    findings.append(Finding(
+                        rule="long_function",
+                        message=f"Function '{node.name}' is {length} lines long (limit: {MAX_FUNCTION_LENGTH}). Consider splitting it into smaller functions.",
+                        severity="medium",
+                        line=start
+                    ))
 
-            length = end - start + 1
-
-            if length > MAX_FUNCTION_LENGTH:
-                smells.append(
-                    f"Function '{node.name}' is long ({length} lines)."
-                    f"Consider splitting it into smaller functions."
-                )
-
-    #check for missing docstring in functions
+    # Missing docstrings
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
-            #a function had a docstring if the first statement is a string literal
-            if (
-                len(node.body) == 0
-                or not isinstance(node.body[0], ast.Expr)
-                or not isinstance(getattr(node.body[0], "value", None), ast.Constant)
-                or not isinstance(getattr(node.body[0].value, "value", None), str)
-            ):
-                smells.append(f"Function '{node.name}' has no docstring."
-                              "Consider adding a short description of its purpose."
-                              )
-                
-    #check for unused variables
-    assigned_vars = set()
-    used_vars = set()
+            has_docstring = (
+                len(node.body) > 0
+                and isinstance(node.body[0], ast.Expr)
+                and isinstance(getattr(node.body[0], "value", None), ast.Constant)
+                and isinstance(node.body[0].value.value, str)
+            )
+            if not has_docstring:
+                findings.append(Finding(
+                    rule="missing_docstring",
+                    message=f"Function '{node.name}' has no docstring. Add a short description of what it does.",
+                    severity="low",
+                    line=getattr(node, "lineno", None)
+                ))
+
+    # Unused variables (track line numbers)
+    assigned: dict[str, int | None] = {}
+    used: set[str] = set()
 
     for node in ast.walk(tree):
-        #variable assignments: x ...
         if isinstance(node, ast.Name):
             if isinstance(node.ctx, ast.Store):
-                assigned_vars.add(node.id)
-            elif isinstance(node.ctx, ast.Load): 
-                used_vars.add(node.id)
+                if node.id not in assigned:
+                    assigned[node.id] = getattr(node, "lineno", None)
+            elif isinstance(node.ctx, ast.Load):
+                used.add(node.id)
 
-    unused_vars = assigned_vars - used_vars
-    for var in unused_vars:
-        smells.append(f"Variable '{var}' is assigned but never used.")
-    
-    return smells
+    for var, line in assigned.items():
+        if var not in used and not var.startswith("_"):
+            findings.append(Finding(
+                rule="unused_variable",
+                message=f"Variable '{var}' is assigned but never used.",
+                severity="medium",
+                line=line
+            ))
+
+    return findings

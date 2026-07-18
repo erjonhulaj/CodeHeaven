@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeHeaven</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <p class="eyebrow">Code analysis, made simple.</p>
+            <h1>CodeHeaven</h1>
+            <p class="subtitle">A calm space to understand and improve your code.</p>
+        </header>
+
+        <section class="editor-section">
+            <textarea id="codeInput" placeholder="Paste your Python code here..." spellcheck="false"></textarea>
+
+            <div class="controls">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="local">Local</button>
+                    <button class="mode-btn" data-mode="ai">AI</button>
+                </div>
+                <button id="analyzeBtn">Analyze</button>
+            </div>
+        </section>
+
+        <section id="resultsSection" class="results-section hidden">
+            <h2>Findings</h2>
+            <div id="resultsList"></div>
+        </section>
+
+        <p id="errorMsg" class="error hidden"></p>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

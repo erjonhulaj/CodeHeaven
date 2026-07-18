@@ -1,0 +1,223 @@
+/* Reset & base setup */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    background: #f7f6f2;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 80px 24px;
+    line-height: 1.5;
+}
+
+.container {
+    width: 100%;
+    max-width: 720px;
+}
+
+header {
+    margin-bottom: 40px;
+}
+
+header .eyebrow {
+    font-size: 15px;
+    color: #6b6b6b;
+    margin-bottom: 8px;
+}
+
+header h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 42px;
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #6b6b6b;
+}
+
+.editor-section {
+    margin-bottom: 48px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 20px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #ffffff;
+    border: 1px solid #e0ddd5;
+    border-radius: 12px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+textarea:focus {
+    border-color: #1a1a1a;
+}
+
+textarea::placeholder {
+    color: #a3a3a3;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.mode-toggle {
+    display: flex;
+    background: #ffffff;
+    border: 1px solid #e0ddd5;
+    border-radius: 100px;
+    padding: 3px;
+}
+
+.mode-btn {
+    padding: 7px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #6b6b6b;
+    background: transparent;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mode-btn.active {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.mode-btn:hover:not(.active) {
+    color: #1a1a1a;
+}
+
+button {
+    padding: 10px 24px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.results-section h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+.finding {
+    background: #ffffff;
+    border: 1px solid #e0ddd5;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+}
+
+.finding-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.severity-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+}
+
+.finding-high .severity-badge {
+    background: #fbe4e4;
+    color: #b3261e;
+}
+
+.finding-medium .severity-badge {
+    background: #fdf0dc;
+    color: #a05a00;
+}
+
+.finding-low .severity-badge {
+    background: #eaeaea;
+    color: #5a5a5a;
+}
+
+.rule-name {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    color: #6b6b6b;
+}
+
+.line-tag {
+    margin-left: auto;
+    font-size: 12px;
+    color: #a3a3a3;
+}
+
+.finding-message {
+    font-size: 14px;
+    color: #3a3a3a;
+    line-height: 1.5;
+}
+
+.no-issues {
+    color: #6b6b6b;
+    font-size: 14px;
+}
+
+.ai-output {
+    background: #ffffff;
+    border: 1px solid #e0ddd5;
+    border-radius: 12px;
+    padding: 20px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.error {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fbe4e4;
+    color: #b3261e;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none;
+}

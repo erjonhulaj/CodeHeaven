@@ -1,13 +1,23 @@
+# app.py
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from backend.engine import explain
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class ExplainRequest(BaseModel):
     code: str
     language: str = "python"
-    mode: str = "mode"
+    mode: str = "local"
 
 @app.get("/")
 def home():
