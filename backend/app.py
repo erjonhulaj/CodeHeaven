@@ -1,7 +1,7 @@
-# app.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from backend.engine import explain
 
@@ -19,17 +19,17 @@ class ExplainRequest(BaseModel):
     language: str = "python"
     mode: str = "local"
 
-@app.get("/")
-def home():
-    return {"message": "Hello from CodeHeaven!"}
-
 @app.post("/api/explain")
 def explain_code(request: ExplainRequest):
-    #Endpoint that dispatches between local or AI explanations
-    
     result = explain(request.code, request.language, request.mode)
     return {
         "mode": request.mode,
         "language": request.language,
         "explanation": result
     }
+
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/")
+def home():
+    return FileResponse("frontend/index.html")

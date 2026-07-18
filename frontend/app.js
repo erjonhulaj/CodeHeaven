@@ -1,4 +1,3 @@
-// Grabs DOM elements once so we don't re-query them on every interaction
 const codeInput = document.getElementById('codeInput');
 const modeButtons = document.querySelectorAll('.mode-btn');
 const analyzeBtn = document.getElementById('analyzeBtn');
@@ -16,7 +15,7 @@ modeButtons.forEach(btn => {
     });
 });
 
-const API_URL = 'http://127.0.0.1:8000/api/explain';
+const API_URL = '/api/explain';
 
 analyzeBtn.addEventListener('click', async () => {
     const code = codeInput.value.trim();
@@ -55,18 +54,19 @@ analyzeBtn.addEventListener('click', async () => {
     }
 });
 
-// Renders either local-mode findings (array of issues) or AI-mode text explanation
 function renderResults(data) {
     resultsList.innerHTML = '';
     resultsSection.classList.remove('hidden');
 
+    const aiDisclaimer = document.getElementById('aiDisclaimer');
+
     if (data.mode === 'ai') {
-        const block = document.createElement('pre');
-        block.className = 'ai-output';
-        block.textContent = data.explanation;
-        resultsList.appendChild(block);
+        renderAiResponse(data.explanation);
+        aiDisclaimer.classList.remove('hidden');
         return;
     }
+
+    aiDisclaimer.classList.add('hidden');
 
     const issues = data.explanation.issues;
 
@@ -90,6 +90,45 @@ function renderResults(data) {
 
         resultsList.appendChild(card);
     });
+}
+
+function renderAiResponse(text) {
+    const suggestionsIndex = text.indexOf('Suggestions:');
+
+    let explanation = text;
+    let suggestions = '';
+
+    if (suggestionsIndex !== -1) {
+        explanation = text.slice(0, suggestionsIndex).trim();
+        suggestions = text.slice(suggestionsIndex + 'Suggestions:'.length).trim();
+    }
+
+    explanation = explanation.replace('Explanation:', '').trim();
+
+    const explanationBlock = document.createElement('div');
+    explanationBlock.className = 'ai-block';
+    explanationBlock.innerHTML = `
+        <h3 class="ai-block-title">Explanation</h3>
+        <p class="ai-block-text">${explanation}</p>
+    `;
+    resultsList.appendChild(explanationBlock);
+
+    if (suggestions) {
+        const suggestionLines = suggestions
+            .split('\n')
+            .map(line => line.replace(/^[-•]\s*/, '').trim())
+            .filter(line => line.length > 0);
+
+        const suggestionsBlock = document.createElement('div');
+        suggestionsBlock.className = 'ai-block';
+        suggestionsBlock.innerHTML = `
+            <h3 class="ai-block-title">Suggestions</h3>
+            <ul class="ai-suggestions-list">
+                ${suggestionLines.map(line => `<li>${line}</li>`).join('')}
+            </ul>
+        `;
+        resultsList.appendChild(suggestionsBlock);
+    }
 }
 
 function showError(message) {
