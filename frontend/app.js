@@ -41,6 +41,12 @@ analyzeBtn.addEventListener('click', async () => {
         });
 
         if (!response.ok) {
+            if (response.status === 429) {
+                const errorData = await response.json().catch(() => null);
+                const detail = errorData?.detail || "Please wait a moment before trying again.";
+                showRateLimitNotice(detail);
+                return;
+            }
             throw new Error(`Server responded with ${response.status}`);
         }
 
@@ -133,9 +139,20 @@ function renderAiResponse(text) {
 
 function showError(message) {
     errorMsg.textContent = message;
+    errorMsg.classList.remove('rate-limit-notice');
+    errorMsg.classList.add('error');
+    errorMsg.classList.remove('hidden');
+}
+
+function showRateLimitNotice(message) {
+    errorMsg.textContent = `⏳ ${message}`;
+    errorMsg.classList.remove('error');
+    errorMsg.classList.add('rate-limit-notice');
     errorMsg.classList.remove('hidden');
 }
 
 function hideError() {
     errorMsg.classList.add('hidden');
+    errorMsg.classList.remove('rate-limit-notice');
+    errorMsg.classList.remove('error');
 }
